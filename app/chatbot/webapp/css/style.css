@@ -1,9 +1,157 @@
-/* Enter your custom styles here */
+/* ✉️ Mensagens */
+.chat-bubble {
+  max-width: 75%;
+  padding: 0.75rem 1rem;
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  font-size: 1rem;
+  line-height: 1.4;
+  word-break: break-word;
+  animation: fadeInUp 0.25s ease-out;
+}
+
 .chatUserMsg {
-    background-color: #dcf8c6  !important;   /* verde-claro estilo zapzap */
+  background: #daf0ff;
+  color: #003366;
+  border-top-left-radius: 1.25rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+.chatBotMsg {
+  background: #f5f5f5;
+  color: #333;
+  border-top-right-radius: 1.25rem;
+  border-bottom-left-radius: 0.5rem;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  
-  .chatBotMsg {
-    background-color: #e6f0fa  !important;   /* azul-claro suave */
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
+}
+
+
+.chatInputBar {
+  display: flex;
+  align-items: flex-end;
+  gap: .75rem;
+
+  max-width: 900px;
+  width: 90%;
+  margin: 1rem auto;
+  padding: .75rem;
+  background: #f0f7ff;
+  border: 1px solid #d0e3fa;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+  box-sizing: border-box;
+}
+
+.chatInputBar.sapMTB,
+.chatInputBar.sapMOTB {
+  height: auto !important;
+  min-height: 3rem;
+  overflow: visible !important;
+}
+
+
+.inputChatBonito {
+  flex: 1 1 auto;
+  /* ocupa o espaço restante, mas permite encolher */
+  min-width: 0;
+  /* evita “empurrar” o botão para fora da tela */
+}
+
+/* TextArea real (UI5 gera .sapMTextAreaInner) */
+.inputChatBonito textarea,
+.inputChatBonito .sapMTextAreaInner {
+  width: 100%;
+  box-sizing: border-box;
+  resize: none;
+  overflow-y: auto;
+
+  min-height: 2.8rem;
+  max-height: 150px;
+
+  /* remove todas as bordas/estado padrão UI5 */
+  border: none !important;
+  box-shadow: none !important;
+
+  background: #fff;
+  padding: .6rem 1rem;
+  border-radius: 16px;
+  font: 1rem "72", "Arial", sans-serif;
+  color: #003366;
+  border: 1px solid #c4ddff;
+}
+
+/* remove wrapper extra */
+.inputChatBonito .sapMInputBaseContentWrapper {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* foco */
+.inputChatBonito textarea:focus,
+.inputChatBonito .sapMTextAreaInner:focus {
+  outline: none;
+  border-color: #0070f2;
+  box-shadow: 0 0 0 2px rgba(0, 112, 242, .2);
+}
+
+
+.sendBtnEstiloso {
+  flex-shrink: 0;
+  height: 2.8rem;
+  width: 2.8rem;
+  min-width: 2.8rem;
+  border-radius: 16px;
+  background: #0070f2;
+  color: #fff;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sendBtnEstiloso:hover {
+  background: #005ec4
+}
+
+.sendBtnEstiloso:focus {
+  box-shadow: 0 0 0 2px rgba(0, 112, 242, .3)
+}
+
+.sendBtnEstiloso:disabled {
+  background: #cce0f5;
+  color: #8caecc;
+  cursor: not-allowed
+}
+
+.typingIndicator {
+  width: 4rem;
+  height: auto;
+  animation: spin 1s linear infinite;
+  opacity: .7;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+.sapMTitle {
+  color: #003b71
+}
