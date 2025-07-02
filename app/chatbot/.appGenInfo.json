@@ -1,0 +1,24 @@
+{
+  "generationParameters": {
+    "generationDate": "Wed Jul 02 2025 12:18:10 GMT+0000 (Coordinated Universal Time)",
+    "generatorPlatform": "SAP Business Application Studio",
+    "serviceType": "Local Cap",
+    "metadataFilename": "",
+    "serviceUrl": "http://localhost:4004/odata/v4/chat/",
+    "appName": "chatbot",
+    "appTitle": "ChatBot",
+    "appDescription": "Aplicação de um chatBot pelo cap",
+    "appNamespace": "",
+    "ui5Theme": "sap_horizon",
+    "ui5Version": "1.136.2",
+    "enableCodeAssist": false,
+    "enableEslint": false,
+    "enableTypeScript": false,
+    "showMockDataInfo": false,
+    "generatorVersion": "1.18.1",
+    "template": "Basic V4",
+    "generatorName": "SAP Fiori Application Generator",
+    "entityRelatedConfig": [],
+    "launchText": "In order to launch the generated app, simply start your CAP project and navigate to the following location in your browser:\n\nhttp://localhost:4004/chatbot/webapp/index.html"
+  }
+}

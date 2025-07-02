@@ -1,0 +1,133 @@
+<mvc:View
+    controllerName="chatbot.controller.viewChatBot"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    height="100%">
+
+    <SplitContainer id="splitContainer">
+        <masterPages>
+            <Page id="masterPage" title="Meus Chats" showHeader="true">
+                <content>
+                    <List
+                        id="chatMasterList"
+                        items="{/Chats}"
+                        mode="SingleSelectMaster"
+                        growing="true"
+                        growingScrollToLoad="true"
+                        selectionChange=".onChatSelect">
+                        <items>
+                            <StandardListItem
+                                id="chatMasterListItem"
+                                title="{= ${lastMessage} ? ${lastMessage} : 'Sem titulo' }" />
+                        </items>
+                    </List>
+                </content>
+
+                <footer>
+                    <Bar id="masterFooterBar">
+                        <contentRight>
+                            <Button
+                                id="btnNewChat"
+                                text="Novo Chat"
+                                type="Emphasized"
+                                press="onCreateChat" />
+                        </contentRight>
+                    </Bar>
+                </footer>
+            </Page>
+        </masterPages>
+
+        <detailPages>
+        <Page id="detailPage" showHeader="true">
+            <customHeader>
+                <Toolbar id="detailHeaderToolbar">
+                    <Title id="detailHeaderTitle" text="Chat 😎" />
+                    <ToolbarSpacer id="detailHeaderSpacer" />
+                    <MenuButton
+                        id="menuChatOptions"
+                        text="Mudar modelo"
+                        icon="sap-icon://action"
+                        tooltip="Ações do Chat"
+                        buttonMode="Split"
+                        defaultAction="onDefaultActionChat"
+                        beforeMenuOpen="onBeforeMenuOpenChat">
+                        <menu>
+                            <Menu id="chatOptionsMenu">
+                                <MenuItem id="menuItemDeleteAll" text="Chat GPT 5" icon="sap-icon://biometric-thumb" press="onDeleteChatMessages" />
+                                <MenuItem id="menuItemRename" text="Ultra Mega Grook" icon="sap-icon://goal" press="onRenameChat" />
+                                <MenuItem id="menuItemChaos" text="Super DeepSeek" icon="sap-icon://verified" press="onChaosMode" />
+                                <MenuItem id="menuItemSticker" text="Abacus (imagine usar issokkk)" icon="sap-icon://delete" press="onStickerSend" />
+                            </Menu>
+                        </menu>
+                    </MenuButton>
+                </Toolbar>
+            </customHeader>
+
+            <content>
+                <ScrollContainer
+                    id="scrollContainer"
+                    height="100%"
+                    width="100%"
+                    vertical="true">
+                        <List
+                            id="messageList"
+                            items="{local>/messages}"
+                            showSeparators="None"
+                            width="100%"
+                            noDataText="Faça sua primeira pergunta 🙂"
+                            updateFinished=".onChatUpdateFinished">
+
+                            <items>
+                                <CustomListItem id="messageListItem">
+                                    <HBox
+                                        id="messageHBox"
+                                        width="100%"
+                                        class="sapUiSmallMarginBottom"
+                                        justifyContent="{= ${local>sender} === 'user' ? 'Start' : 'End' }">
+
+                                        <VBox
+                                            id="messageVBox"
+                                            class="chat-bubble sapUiTinyMargin sapUiRounded sapUiContentPadding">
+                                            <Text
+                                                id="messageText"
+                                                text="{local>text}"
+                                                wrapping="true"/>
+                                        </VBox>
+
+                                    </HBox>
+                                </CustomListItem>
+                            </items>
+                        </List>
+                    </ScrollContainer>
+                </content>
+                <footer>
+                    <Toolbar id="inputToolbar" class="sapUiSmallMargin">
+                        <TextArea
+                            id="input"
+                            width="100%"
+                            growing="true"
+                            growingMaxLines="4"
+                            placeholder="Digite sua pergunta...">
+                            <layoutData>
+                                <ToolbarLayoutData id = "sadas123" shrinkable="true"/>
+                            </layoutData>
+                        </TextArea>
+
+                        <Button
+                            id="btnSend"
+                            icon="sap-icon://paper-plane"
+                            type="Emphasized"
+                            press="onSend"
+                            class="sapUiTinyMarginBegin">
+                            <layoutData>
+                                <ToolbarLayoutData id = "as123"/>
+                            </layoutData>
+                        </Button>
+                    </Toolbar>
+                </footer>
+            </Page>
+        </detailPages>
+
+    </SplitContainer>
+</mvc:View>
