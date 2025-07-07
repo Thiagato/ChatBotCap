@@ -2,9 +2,9 @@
     controllerName="chatbot.controller.viewChatBot"
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns:core="sap.ui.core"
     displayBlock="true"
     xmlns:unified="sap.ui.unified"
+    xmlns:core="sap.ui.core"
     height="100%">
 
     <SplitContainer id="splitContainer">
@@ -93,11 +93,13 @@
                                                 class="chat-bubble sapUiTinyMargin sapUiContentPadding">
 
                                                 <!-- Bot -->
-                                                <FormattedText
-                                                    id="ftBotMsg"
-                                                    htmlText="{local>html}"
-                                                    visible="{= ${local>sender} === 'bot' }"
-                                                    class="messageHtml"/>
+                                            <core:HTML
+                                                id="htBotMsg"
+                                                content="{local>html}"
+                                                visible="{= ${local>sender} === 'bot' }"
+                                                class="messageHtml"
+                                                preferDOM="true"/>   <!-- garante que o HTML fique no DOM -->
+
 
                                                 <!-- Usuário -->
                                                 <Text
