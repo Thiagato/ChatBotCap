@@ -88,9 +88,26 @@
                                             class="sapUiSmallMarginBottom"
                                             justifyContent="{= ${local>sender} === 'user' ? 'End' : 'Start' }">
 
-                                            <VBox id = "as12da123" class="chat-bubble sapUiTinyMargin sapUiContentPadding">
-                                                <Text id = "asa1da123" text="{local>text}" wrapping="true"/>
-                                            </VBox>
+                                            <VBox
+                                                id="vbBubble"
+                                                class="chat-bubble sapUiTinyMargin sapUiContentPadding">
+
+                                                <!-- Bot -->
+                                                <FormattedText
+                                                    id="ftBotMsg"
+                                                    htmlText="{local>html}"
+                                                    visible="{= ${local>sender} === 'bot' }"
+                                                    class="messageHtml"/>
+
+                                                <!-- Usuário -->
+                                                <Text
+                                                    id="txtUserMsg"
+                                                    text="{local>text}"
+                                                    wrapping="true"
+                                                    visible="{= ${local>sender} === 'user' }"/>
+                                             </VBox>
+
+
 
                                         </HBox>
                                     </CustomListItem>

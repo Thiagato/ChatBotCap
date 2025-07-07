@@ -151,6 +151,10 @@
   }
 }
 
+.messageHtml ul     { margin: 0 0 0.5rem 1.25rem; }
+.messageHtml h3     { margin: 0 0 0.5rem 0; font-size: 1rem; }
+.messageHtml strong { font-weight: 700; }
+
 
 .sapMTitle {
   color: #003b71

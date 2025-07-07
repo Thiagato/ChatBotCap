@@ -66,30 +66,38 @@ sap.ui.define([
         /* ================  HISTÓRICO DE MENSAGENS  ================ */
         async _loadHistory() {
             if (!this._chatId) { return; }
-
-            const oModel = this._getODataModel();
+        
+            const oModel   = this._getODataModel();
             const oBinding = oModel.bindList("/Messages", null, [
                 new sap.ui.model.Sorter("createdAt", false), // ASC
-                new sap.ui.model.Sorter("sender", true)   // user antes do bot no mesmo ts
+                new sap.ui.model.Sorter("sender",   true)    // user antes do bot
             ]);
-
             oBinding.filter(new Filter("chat_ID", FilterOperator.EQ, this._chatId));
-
+        
             const aMsgs = (await oBinding.requestContexts()).map(ctx => {
                 const m = ctx.getObject();
-                return { sender: m.sender, text: m.text };
+                const html = m.sender === "bot"
+                    ? marked.parse(m.text, { mangle: false, headerIds: false })
+                    : m.text;
+                return { sender: m.sender, text: m.text, html: html };
             });
-
+        
             this._oMsgModel.setProperty("/messages", aMsgs);
             this._scrollToEnd();
         },
 
-        _addMessageToChat(sender, text) {
-            const msgs = this._oMsgModel.getProperty("/messages");
-            msgs.push({ sender, text });
+        _addMessageToChat: function (sSender, sText) {
+            const aMsgs = this._oMsgModel.getProperty("/messages");
+
+            const sHtml = (sSender === "bot")
+                ? window.marked.parse(sText, { mangle: false, headerIds: false })
+                : sText;
+
+            aMsgs.push({ sender: sSender, text: sText, html: sHtml });
             this._oMsgModel.checkUpdate();
             this._scrollToEnd();
         },
+
 
         _scrollToEnd() {
             const oSC = this.byId("scrollContainer");
