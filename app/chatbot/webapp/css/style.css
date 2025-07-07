@@ -163,6 +163,15 @@
   font-family: monospace;
   font-size: 0.9rem;
 }
+.chat-bubble pre code{
+  display:block;
+  padding:8px 12px;
+  border-radius:6px;
+  background:#f5f5f5;          /* borda cinza-claro */
+  box-shadow: inset 0 0 0 1px #e0e0e0;
+  font-size: 0.875rem;         /* menor que o texto normal */
+  overflow-x:auto;
+}
 
 
 .sapMTitle {

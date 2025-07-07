@@ -21,19 +21,13 @@ sap.ui.define([
         onInit: function () {
             console.log("[chatbot] onInit…");
 
-            // Ajuste o comportamento padrão do marked para permitir highlight.js funcionar
             if (window.marked) {
                 marked.setOptions({
-                highlight: function(code, lang) {
-                    const validLang = hljs.getLanguage(lang) ? lang : 'plaintext';
-                    return hljs.highlight(code, { language: validLang }).value;
-                },
-                langPrefix: 'language-',  // necessário para o highlight.js funcionar
-                mangle: false,
-                headerIds: false
+                    langPrefix : 'language-',  // facilita usar highlight.js depois
+                    mangle     : false,
+                    headerIds  : false
                 });
             }
-            
 
             /* Modelo local */
             this._oMsgModel = new sap.ui.model.json.JSONModel({
@@ -83,46 +77,33 @@ sap.ui.define([
         
             const oModel   = this._getODataModel();
             const oBinding = oModel.bindList("/Messages", null, [
-                new sap.ui.model.Sorter("createdAt", false), // ASC
-                new sap.ui.model.Sorter("sender",   true)    // user antes do bot
+                new sap.ui.model.Sorter("createdAt", false),
+                new sap.ui.model.Sorter("sender",   true)   // user antes do bot no mesmo TS
             ]);
-            oBinding.filter(new Filter("chat_ID", FilterOperator.EQ, this._chatId));
+            oBinding.filter(new sap.ui.model.Filter(
+                "chat_ID", sap.ui.model.FilterOperator.EQ, this._chatId
+            ));
         
+            // transforma cada registro: html só para bot
             const aMsgs = (await oBinding.requestContexts()).map(ctx => {
                 const m = ctx.getObject();
-                const html = m.sender === "bot"
-                                        ? marked.parse(m.text)   // ← sem opções aqui
-                                        : m.text;
-                return { sender: m.sender, text: m.text, html: html };
+                return {
+                    sender : m.sender,
+                    text   : m.text,
+                    html   : m.sender === "bot" ? marked.parse(m.text) : m.text
+                };
             });
         
             this._oMsgModel.setProperty("/messages", aMsgs);
             this._scrollToEnd();
         },
 
-        _addMessageToChat: function (sSender, sText) {
-            const aMsgs = this._oMsgModel.getProperty("/messages");
-        
-            // _addMessageToChat
-                const sHtml = (sSender === "bot")
-                ? marked.parse(sText)    // idem
-                : sText;
-
-        
-            aMsgs.push({ sender: sSender, text: sText, html: sHtml });
+        _addMessageToChat(sender, text) {
+            const msgs = this._oMsgModel.getProperty("/messages");
+            msgs.push({ sender, text });
             this._oMsgModel.checkUpdate();
             this._scrollToEnd();
-        
-            // Aplica highlight se highlight.js estiver disponível
-            setTimeout(() => {
-                if (window.hljs) {
-                    document.querySelectorAll('pre code').forEach(block => {
-                        window.hljs.highlightElement(block);
-                    });
-                }
-            }, 0);
         },
-
 
         _scrollToEnd() {
             const oSC = this.byId("scrollContainer");
@@ -286,24 +267,18 @@ sap.ui.define([
         /* ------------- Ajusta estilo de cada bolha --------------- */
         onChatUpdateFinished(oEvt) {
             oEvt.getSource().getItems().forEach(it => {
-              const data   = it.getBindingContext("local").getObject();
-              const bubble = it.getContent()[0].getItems()[0];
-          
-              bubble.toggleStyleClass("chatUserMsg", data.sender === "user");
-              bubble.toggleStyleClass("chatBotMsg", data.sender === "bot");
+                const data = it.getBindingContext("local").getObject();
+                const bubble = it.getContent()[0].getItems()[0];
+
+                bubble.toggleStyleClass("chatUserMsg", data.sender === "user");
+                bubble.toggleStyleClass("chatBotMsg", data.sender === "bot");
             });
-          
-            // 🔸 Agora é 100% certo que o HTML está na tela
-            // dentro onChatUpdateFinished, depois do bubble.toggleStyleClass(...)
             if (window.hljs) {
-                // espera o repaint da UI5
                 jQuery.sap.delayedCall(0, this, function () {
-                hljs.highlightAll();     // destaca todos os <code> recém-inseridos
+                    hljs.highlightAll();          // colore todos os <pre><code>
                 });
             }
-  
-          }
-          
+        }
 
     });
 });
