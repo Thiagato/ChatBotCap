@@ -18,3 +18,7 @@ entity Messages : cuid, managed {
     };
     text   : LargeString;
 }
+entity CsvFiles : cuid, managed {
+  chat_ID : UUID;
+  content : LargeString;
+}

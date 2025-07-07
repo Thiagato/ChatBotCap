@@ -4,6 +4,7 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:core="sap.ui.core"
     displayBlock="true"
+    xmlns:unified="sap.ui.unified"
     height="100%">
 
     <SplitContainer id="splitContainer">
@@ -48,7 +49,7 @@
                   enableScrolling="false">
                 <customHeader>
                     <Toolbar id="detailHeaderToolbar">
-                        <Title id="detailPageTitle" text="Chat 😎"/>
+                        <Title id="detailPageTitle" text="Chat"/>
                         <ToolbarSpacer id="detailToolbarSpacer"/>
                         <MenuButton id="chatMenuButton" text="Mudar modelo"
                                     icon="sap-icon://action"
@@ -57,10 +58,10 @@
                                     beforeMenuOpen="onBeforeMenuOpenChat">
                             <menu>
                                 <Menu id="chatOptionsMenu">
-                                    <MenuItem id="chatGpt5MenuItem" text="Chat GPT 5" icon="sap-icon://biometric-thumb" press="onDeleteChatMessages"/>
-                                    <MenuItem id="ultraMegaGrookMenuItem" text="Ultra Mega Grook" icon="sap-icon://goal" press="onRenameChat"/>
-                                    <MenuItem id="superDeepSeekMenuItem" text="Super DeepSeek" icon="sap-icon://verified" press="onChaosMode"/>
-                                    <MenuItem id="abacusMenuItem" text="Abacus (imagine usar isso kkk)" icon="sap-icon://delete" press="onStickerSend"/>
+                                    <MenuItem id="chatGpt5MenuItem" text="Modelo 1" icon="sap-icon://biometric-thumb" press="onDeleteChatMessages"/>
+                                    <MenuItem id="ultraMegaGrookMenuItem" text="Modelo 2" icon="sap-icon://goal" press="onRenameChat"/>
+                                    <MenuItem id="superDeepSeekMenuItem" text="Modelo 3" icon="sap-icon://verified" press="onChaosMode"/>
+                                    <MenuItem id="abacusMenuItem" text="Modelo 4" icon="sap-icon://delete" press="onStickerSend"/>
                                 </Menu>
                             </menu>
                         </MenuButton>
@@ -87,9 +88,21 @@
                                             class="sapUiSmallMarginBottom"
                                             justifyContent="{= ${local>sender} === 'user' ? 'End' : 'Start' }">
 
-                                            <VBox id = "as12da123" class="chat-bubble sapUiTinyMargin sapUiContentPadding">
-                                                <Text id = "asa1da123" text="{local>text}" wrapping="true"/>
-                                            </VBox>
+                                           <VBox id ="teste123" class="chat-bubble sapUiTinyMargin sapUiContentPadding">
+                                            <!-- BOT -->
+                                            <FormattedText
+                                            id ="test123e123"
+                                                htmlText="{local>html}"
+                                                visible="{= ${local>sender} === 'bot'}"/>
+
+                                            <!-- USER -->
+                                            <Text
+                                            id ="testa1e123"
+                                                text="{local>text}"
+                                                wrapping="true"
+                                                visible="{= ${local>sender} === 'user'}"/>
+                                        </VBox>
+
 
                                         </HBox>
                                     </CustomListItem>
@@ -117,6 +130,14 @@
                     <Toolbar id="inputToolbar"
                              class="chatInputBar"
                              design="Auto">
+                        <unified:FileUploader id="uploader"
+                            fileType="csv"
+                            mimeType="text/csv"
+                            buttonOnly="true"
+                            iconOnly="true"
+                            icon="sap-icon://upload"
+                            change=".onSelectCSV"    
+                            />
                         <TextArea id="input"
                                   growing="true"
                                   growingMaxLines="6"

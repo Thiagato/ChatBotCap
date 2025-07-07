@@ -14,10 +14,20 @@ sap.ui.define([
         _oMsgModel: null,
         _pollTimer: null,
         _pollChatId: null,
+        _pendingCsv : null,
+
 
         /* ======================  LIFECYCLE  ====================== */
         onInit: function () {
             console.log("[chatbot] onInit…");
+
+            if (window.marked) {
+                marked.setOptions({
+                    langPrefix : 'language-',  // facilita usar highlight.js depois
+                    mangle     : false,
+                    headerIds  : false
+                });
+            }
 
             /* Modelo local */
             this._oMsgModel = new sap.ui.model.json.JSONModel({
@@ -64,20 +74,26 @@ sap.ui.define([
         /* ================  HISTÓRICO DE MENSAGENS  ================ */
         async _loadHistory() {
             if (!this._chatId) { return; }
-
-            const oModel = this._getODataModel();
+        
+            const oModel   = this._getODataModel();
             const oBinding = oModel.bindList("/Messages", null, [
-                new sap.ui.model.Sorter("createdAt", false), // ASC
-                new sap.ui.model.Sorter("sender", true)   // user antes do bot no mesmo ts
+                new sap.ui.model.Sorter("createdAt", false),
+                new sap.ui.model.Sorter("sender",   true)   // user antes do bot no mesmo TS
             ]);
-
-            oBinding.filter(new Filter("chat_ID", FilterOperator.EQ, this._chatId));
-
+            oBinding.filter(new sap.ui.model.Filter(
+                "chat_ID", sap.ui.model.FilterOperator.EQ, this._chatId
+            ));
+        
+            // transforma cada registro: html só para bot
             const aMsgs = (await oBinding.requestContexts()).map(ctx => {
                 const m = ctx.getObject();
-                return { sender: m.sender, text: m.text };
+                return {
+                    sender : m.sender,
+                    text   : m.text,
+                    html   : m.sender === "bot" ? marked.parse(m.text) : m.text
+                };
             });
-
+        
             this._oMsgModel.setProperty("/messages", aMsgs);
             this._scrollToEnd();
         },
@@ -134,36 +150,57 @@ sap.ui.define([
         },
 
         /* -------------- Envio e polling da resposta -------------- */
-        async onSend() {
-            const oInput = this.byId("input");
-            const sQuest = (oInput.getValue() || "").trim();
-            if (!sQuest) { return; }
-
-            if (!this._chatId) { await this.onCreateChat(); }
-
-            /* (1) exibe pergunta do usuário */
-            this._addMessageToChat("user", sQuest);
-            oInput.setValue("");
-
-            /* (2) liga spinner do bot */
-            this._showTypingIndicator();
-
-            try {
-                const oModel = this._getODataModel();
+       /** Envia pergunta (e CSV pendente, se existir) */
+            async onSend() {
+                const oInput = this.byId("input");
+                const sQuest = (oInput.getValue() || "").trim();
+                if (!sQuest) { return; }                       // nada para perguntar
+            
+                /* cria chat se ainda não existe */
+                if (!this._chatId) { await this.onCreateChat(); }
+            
+                /* 1️⃣  se há CSV pendente, envia agora */
+                if (this._pendingCsv) {
+                try {
+                    const oModel  = this._getODataModel();
+                    const oUpload = oModel.bindContext("/uploadCsv(...)");
+                    oUpload.setParameter("chat", this._chatId);   // UUID puro
+                    oUpload.setParameter("csv",  this._pendingCsv);
+                    await oUpload.execute();                      // grava no backend
+                    this._pendingCsv = null;                      // limpa buffer
+                    sap.m.MessageToast.show("CSV enviado com sucesso!");
+                } catch (e) {
+                    console.error("[uploadCsv] erro:", e);
+                    sap.m.MessageToast.show("Falha ao enviar CSV");
+                    return;                                       // aborta envio de pergunta
+                }
+                }
+            
+                /* 2️⃣  mostra pergunta na tela */
+                this._addMessageToChat("user", sQuest);
+                oInput.setValue("");
+            
+                /* 3️⃣  liga spinner do bot */
+                this._showTypingIndicator();
+            
+                /* 4️⃣  chama action sendMessage */
+                try {
+                const oModel  = this._getODataModel();
                 const oAction = oModel.bindContext("/sendMessage(...)");
-                oAction.setParameter("chat", { ID: this._chatId });
+                oAction.setParameter("chat",     { ID: this._chatId });
                 oAction.setParameter("question", sQuest);
-
-                await oAction.execute();           // backend => “queued”
-                oModel.refresh();                  // atualiza master
-                this._startPolling(this._chatId);  // dispara loop de verificação
-
-            } catch (e) {
+            
+                await oAction.execute();           // backend => queued
+                oModel.refresh();                  // mantém master list
+                this._startPolling(this._chatId);  // verifica chegada da resposta
+            
+                } catch (e) {
                 console.error("[chatbot] sendMessage falhou:", e);
-                MessageToast.show("Erro: " + e.message);
+                sap.m.MessageToast.show("Erro: " + e.message);
                 this._hideTypingIndicator();       // garante desligar spinner
-            }
-        },
+                }
+            },
+            
 
         onInputChange(oEvt) {
             const oBtn = this.byId("btnSend");
@@ -171,6 +208,14 @@ sap.ui.define([
             oBtn.setEnabled(!!sVal);
         },
 
+        onSelectCSV: async function (oEvt) {
+            const file = oEvt.getParameter("files")[0];
+            if (!file) { return; }
+          
+            this._pendingCsv = await file.text();   // 🔸 só guarda
+            sap.m.MessageToast.show("CSV carregado. Será enviado junto com a próxima pergunta.");
+          },      
+          
         /* ------------------- Polling simples --------------------- */
         _startPolling(chatId) {
             if (this._pollTimer) { return; }
@@ -228,6 +273,11 @@ sap.ui.define([
                 bubble.toggleStyleClass("chatUserMsg", data.sender === "user");
                 bubble.toggleStyleClass("chatBotMsg", data.sender === "bot");
             });
+            if (window.hljs) {
+                jQuery.sap.delayedCall(0, this, function () {
+                    hljs.highlightAll();          // colore todos os <pre><code>
+                });
+            }
         }
 
     });

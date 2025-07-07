@@ -9,11 +9,28 @@ const openai = new OpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY
 });
 
+async function callDeepSeek(payload, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await openai.chat.completions.create(payload);
+    } catch (e) {
+      /* corpo vazio ou JSON quebrado → SyntaxError */
+      const badBody = e instanceof SyntaxError ||
+                      e.message?.includes("Unexpected end of JSON");
+      if (!badBody) throw e;                    // outros erros: não insista
+      console.warn(`[DeepSeek] corpo inválido, tentativa ${i + 1}/${retries}`);
+      await new Promise(r => setTimeout(r, (i + 1) * 2000)); // back-off
+    }
+  }
+  /* depois de N tentativas */
+  throw new Error("DeepSeek indisponível após várias tentativas");
+}
+
 module.exports = cds.service.impl(function (srv) {
 
   const MAX_CONTEXT = 10;                       // quantas msgs anteriores enviar
 
-  const { Chats, Messages } = srv.entities;
+  const { Chats, Messages, CsvFiles  } = srv.entities;
 
   console.log("✅ CAP Service inicializado");
 
@@ -24,80 +41,82 @@ module.exports = cds.service.impl(function (srv) {
   });
 
   srv.on('sendMessage', async req => {
-    //  Extrai parâmetros
     const chatGuid = typeof req.data.chat === 'string'
-      ? req.data.chat
-      : req.data.chat.ID;          // entidade = {ID: …}
+        ? req.data.chat : req.data.chat.ID;
     const question = req.data.question;
 
-    // Grava pergunta do usuário (sincrono)                  
     await INSERT.into(Messages).entries({
-      chat_ID: chatGuid,              // GUID puro
-      sender: 'user',
-      text: question
+      chat_ID: chatGuid, sender: 'user', text: question
     });
 
-    //DISPARA processamento assincrono (não await!)            
     (async () => {
       try {
-        // busca últimas N*2 mensagens para contexto           
+        /* 1️⃣ CSV + contexto (igual) */
+        const csvRow = await SELECT.one.from(CsvFiles)
+                          .where({ chat_ID: chatGuid })
+                          .orderBy('createdAt desc');
+        const csvText = csvRow?.content || "";
+
         const prev = await SELECT.from(Messages)
-          .where({ chat_ID: chatGuid })
-          .orderBy('createdAt desc')
-          .limit(MAX_CONTEXT * 2);
+                         .where({ chat_ID: chatGuid })
+                         .orderBy('createdAt desc')
+                         .limit(MAX_CONTEXT * 2);
 
         const contextMsgs = prev.reverse().map(m => ({
-          role: m.sender === 'user' ? 'user' : 'assistant',
-          content: m.text
+          role: m.sender === 'user' ? 'user' : 'assistant', content: m.text
         }));
 
-        // monta payload e chama DeepSeek                      
-        const { choices } = await openai.chat.completions.create({
-          model: 'deepseek-chat',
-          messages: [
-            {
-              role: 'system',
-              content: 'Você é um assistente SAP CAP/BTP em pt-BR.'
-            },
-            ...contextMsgs,
-            { role: 'user', content: question }
-          ]
+        const baseMsgs = [
+          { role: 'system', content: 'Você é um assistente SAP em pt-BR.' },
+          ...contextMsgs,
+          { role: 'user',
+            content: csvText
+              ? `Contexto CSV:\n${csvText}\n\nPergunta: ${question}`
+              : question }
+        ];
+
+        /* 2️⃣ Usa helper com retry */
+        const { choices } = await callDeepSeek({
+          model      : 'deepseek-chat',
+          messages   : baseMsgs,
+          max_tokens : 2048
         });
 
         const answer = choices?.[0]?.message?.content ?? "❔";
 
-        //grava resposta do bot                               
         await INSERT.into(Messages).entries({
-          chat_ID: chatGuid,
-          sender: 'bot',
-          text: answer
+          chat_ID: chatGuid, sender: 'bot', text: answer
         });
-
-        // atualiza resumo no Chat  
         await UPDATE(Chats, { ID: chatGuid }).with({ lastMessage: answer });
-
         console.log("[DeepSeek] resposta gravada para chat", chatGuid);
+
       } catch (e) {
         console.error("[DeepSeek bg] erro:", e);
+        const friendly = e.message.includes("indisponível")
+              ? "⚠️ DeepSeek está instável. Tente novamente mais tarde."
+              : (errorMsg[e?.status] || errorMsg.DEFAULT);
 
-        // 1. captura status (OpenAI SDK devolve .status)
-        const status = e?.status || e?.code || "DEFAULT";
-        const friendly = errorMsg[status] || errorMsg.DEFAULT;
-
-        // 2. grava mensagem de erro para o usuário
         await INSERT.into(Messages).entries({
-          chat_ID: chatGuid,
-          sender: "bot",
-          text: friendly
+          chat_ID: chatGuid, sender: 'bot', text: friendly
         });
-
-        // 3. registra no Chat o último erro
-        await UPDATE(Chats, { ID: chatGuid })
-          .with({ lastMessage: friendly });
+        await UPDATE(Chats, { ID: chatGuid }).with({ lastMessage: friendly });
       }
-    })();   // ← dispara e esquece
+    })();
 
-    // Resposta imediata para o frontend                
-    return { status: "queued" };      // front ativa polling e logo vê a resposta
+    return { status: "queued" };
   });
+
+  srv.on('uploadCsv', async req => {
+    const { chat, csv } = req.data;
+    if (!chat || !csv) return req.error(400, "chat e csv obrigatórios");
+    console.log("[uploadCsv] chat:", chat, "bytes:", csv.length);
+
+    await INSERT.into(CsvFiles).entries({  
+      chat_ID : chat,
+      content : csv
+    });
+
+    return "ok";
+  });
+
 });
