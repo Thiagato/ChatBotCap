@@ -1,25 +1,16 @@
-# Getting Started
+# Chatbot CAP com OpenAI
 
-Welcome to your new project.
+Chatbot construído usando o SAP Cloud Application Programming Model (CAP) com suporte a contexto e polling. Utiliza DeepSeek/OpenAI como motor de IA.
 
-It contains these folders and files, following our recommended project layout:
+## Funcionalidades
+- Criação e gerenciamento de chats
+- Mensagens com contexto (até as 10 últimas)
+- Comunicação assíncrona com polling
+- Interface SAPUI5 freestyle
 
-File or Folder | Purpose
----------|----------
-`app/` | content for UI frontends goes here
-`db/` | your domain models and data go here
-`srv/` | your service models and code go here
-`package.json` | project metadata and configuration
-`readme.md` | this getting started guide
+## Como usar
+1. Clone o projeto
+2. Instale as dependências
+3. Rode com `cds watch`
+4. Configure sua chave OpenAI no `.env`
 
-
-## Next Steps
-
-- Open a new terminal and run `cds watch`
-- (in VS Code simply choose _**Terminal** > Run Task > cds watch_)
-- Start adding content, for example, a [db/schema.cds](db/schema.cds).
-
-
-## Learn More
-
-Learn more at https://cap.cloud.sap/docs/get-started/.
