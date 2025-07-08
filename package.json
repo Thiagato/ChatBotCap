@@ -8,6 +8,7 @@
   "dependencies": {
     "@sap/cds": "^9",
     "express": "^4",
+    "highlight.js": "^11.11.1",
     "marked": "^16.0.0",
     "openai": "^5.8.2"
   },

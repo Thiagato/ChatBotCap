@@ -95,7 +95,7 @@
                                                 htmlText="{local>html}"
                                                 visible="{= ${local>sender} === 'bot'}"/>
 
-                                            <!-- USER -->
+                                            <!-- USUARIO -->
                                             <Text
                                             id ="testa1e123"
                                                 text="{local>text}"
