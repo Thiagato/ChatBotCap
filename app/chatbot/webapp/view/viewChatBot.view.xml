@@ -51,6 +51,7 @@
                     <Toolbar id="detailHeaderToolbar">
                         <Title id="detailPageTitle" text="Chat"/>
                         <ToolbarSpacer id="detailToolbarSpacer"/>
+                        <Button id = "logout" text="Trocar de Usuário" press="onLogout" icon="sap-icon://log" />
                         <MenuButton id="chatMenuButton" text="Mudar modelo"
                                     icon="sap-icon://action"
                                     buttonMode="Split"

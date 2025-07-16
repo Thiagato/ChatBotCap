@@ -22,5 +22,18 @@
   "scripts": {
     "start": "cds-serve",
     "watch-chatbot": "cds watch --open chatbot/webapp/index.html?sap-ui-xx-viewCache=false"
+  },
+  "auth": {
+    "kind": "mocked",
+    "users": {
+      "thiago": {
+        "ID": "fd1f9c6e-3e39-4f2f-8519-081049c29101",
+        "roles": ["authenticated-user"]
+      },
+      "outro_usuario": {
+        "ID": "fd1f9c6e-3e39-4f2f-8519-081049c29102",
+        "roles": ["authenticated-user"]
+      }
+    }
   }
 }

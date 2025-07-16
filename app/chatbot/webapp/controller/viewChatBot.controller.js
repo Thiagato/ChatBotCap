@@ -123,24 +123,35 @@ sap.ui.define([
 
         /* ========================  UI ============================ */
         async onCreateChat() {
+            console.log("FRONTEND: Botão 'Criar Chat' clicado. Chamando a ação...");
+        
             try {
-                const oModel = this._getODataModel();
+                const oModel = this.getView().getModel();
                 const oAction = oModel.bindContext("/startChat(...)");
-
+                
+                // Define o parâmetro que o backend espera
+                oAction.setParameter("title", "Chat criado pelo modo padrão do CAP");
+        
+                // Executa a ação. Simples assim.
                 await oAction.execute();
-
-                this._stopPolling();                // para qualquer timer antigo
-
-                const oChat = await oAction.getBoundContext().requestObject();
+                console.log("FRONTEND: Ação 'startChat' executada com sucesso!");
+        
+                const ctx = oAction.getBoundContext();
+                const oChat = ctx?.getObject();
+        
+                if (!oChat?.ID) {
+                    throw new Error("A resposta da ação de chat é inválida.");
+                }
+        
+                // Sua lógica de UI para atualizar a tela
+                this._stopPolling();
                 this._chatId = oChat.ID;
-
-                this._oMsgModel.setProperty("/messages", []);
                 await this._loadHistory();
                 oModel.refresh();
-
+        
             } catch (e) {
-                console.error("[chatbot] erro onCreateChat:", e);
-                MessageToast.show("Erro ao criar chat");
+                console.error("FRONTEND: Erro ao criar chat:", e.message);
+                sap.m.MessageToast.show("Erro ao tentar iniciar o chat.");
             }
         },
 
@@ -207,7 +218,45 @@ sap.ui.define([
                 this._hideTypingIndicator();       // garante desligar spinner
                 }
             },
+
+            onLogout: function() {
+                console.log("CONTROLLER: Botão 'Trocar de Usuário' clicado.");
             
+                // Obtém a URL base do serviço OData
+                const sServiceUrl = this.getView().getModel().getServiceUrl();
+            
+                // Faz uma requisição com credenciais inválidas para forçar um 401
+                fetch(sServiceUrl, {
+                    method: "GET",
+                    headers: {
+                        // Usa credenciais inválidas para tentar invalidar o cache de autenticação
+                        "Authorization": "Basic " + btoa("invalid:invalid")
+                    },
+                    // Importante: Define credentials como 'omit' para evitar enviar credenciais atuais
+                    credentials: "omit"
+                }).then(response => {
+                    console.log("LOGOUT: Resposta recebida:", response.status);
+            
+                    // Obtém a URL base sem parâmetros
+                    const cleanUrl = window.location.pathname;
+                    // Adiciona um parâmetro único para evitar cache
+                    const logoutUrl = cleanUrl + "?logout=" + new Date().getTime();
+                    // Redireciona para a URL limpa
+                    window.location.assign(logoutUrl);
+                }).catch(error => {
+                    console.error("LOGOUT: Erro na chamada de logout, recarregando mesmo assim.", error);
+                    // Mesmo em caso de erro, redireciona para a URL limpa
+                    const cleanUrl = window.location.pathname;
+                    const logoutUrl = cleanUrl + "?logout=" + new Date().getTime();
+                    window.location.assign(logoutUrl);
+                });
+            
+                // Limpar estado local
+                this._chatId = null;
+                this._stopPolling();
+                sap.m.MessageToast.show("Logout realizado. Por favor, insira novas credenciais.");
+            },
+
 
         onInputChange(oEvt) {
             const oBtn = this.byId("btnSend");

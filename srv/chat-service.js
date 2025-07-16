@@ -34,11 +34,22 @@ module.exports = cds.service.impl(function (srv) {
 
   console.log("✅ CAP Service inicializado");
 
-  srv.on('startChat', async req => {
+  srv.on('startChat', async (req) => {
+    // Pegue o parâmetro do negócio
     const { title } = req.data;
-    const [chat] = await cds.run(INSERT.into(Chats).entries({ title }));
+    
+    // O CAP injeta o usuário logado aqui! Mágica! ✨
+    const userId = req.user.id; 
+    console.log(`BACKEND: Usuário autenticado pelo CAP é '${req.user.id}'. Criando chat...`);
+
+    // Lógica para inserir o chat no banco
+    const [chat] = await cds.run(
+        INSERT.into('my.chat.Chats').entries({ title, user_ID: userId })
+    );
+
+    // Retorna o chat que foi criado
     return chat;
-  });
+});
 
   srv.on('sendMessage', async req => {
     const chatGuid = typeof req.data.chat === 'string'
@@ -118,5 +129,13 @@ module.exports = cds.service.impl(function (srv) {
 
     return "ok";
   });
+
+  srv.on('READ', 'Chats', async (req) => {
+    console.log(`BACKEND: Filtrando chats apenas para o usuário: ${req.user.id}`);
+    
+    // O .where faz a mágica de filtrar no banco de dados
+    // apenas os chats onde a coluna 'user_ID' é igual ao ID do usuário logado.
+    return SELECT.from('my.chat.Chats').where({ user_ID: req.user.id });
+});
 
 });
