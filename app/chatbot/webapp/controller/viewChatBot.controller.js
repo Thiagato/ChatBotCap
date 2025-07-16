@@ -4,10 +4,8 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator"
-    
 ], function (Controller, MessageToast, JSONModel, Filter, FilterOperator) {
     "use strict";
-
 
     return Controller.extend("chatbot.controller.viewChatBot", {
 
@@ -17,7 +15,6 @@ sap.ui.define([
         _pollTimer: null,
         _pollChatId: null,
         _pendingCsv : null,
-        
 
 
         /* ======================  LIFECYCLE  ====================== */
@@ -26,14 +23,10 @@ sap.ui.define([
 
             if (window.marked) {
                 marked.setOptions({
-                    highlight: function (code, lang) {
-                      if (hljs.getLanguage(lang)) {
-                        return hljs.highlight(code, { language: lang }).value;
-                      } else {
-                        return hljs.highlightAuto(code).value;
-                      }
-                    }
-                  });
+                    langPrefix : 'language-',  // facilita usar highlight.js depois
+                    mangle     : false,
+                    headerIds  : false
+                });
             }
 
             /* Modelo local */
