@@ -1,0 +1,27 @@
+{
+  "xsappname": "chatbot-cap",          
+  "tenant-mode": "dedicated",
+
+  "oauth2-configuration": {
+    "redirect-uris": [
+      "https://*.applicationstudio.cloud.sap/**"
+    ]
+  },
+
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.ChatUser",
+      "description": "ChatUser"
+    }
+  ],
+
+  "role-templates": [
+    {
+      "name": "ChatUser",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.ChatUser"
+      ]
+    }
+  ]
+}

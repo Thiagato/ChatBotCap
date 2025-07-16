@@ -1,7 +1,7 @@
  using my.chat as chat from '../db/schema';
 
 
- service ChatService @(requires: 'authenticated-user') {
+ service ChatService @(requires: 'ChatUser') {
  
 //  function callDeepSeek(question: String) returns String;
    

@@ -7,6 +7,8 @@
   "private": true,
   "dependencies": {
     "@sap/cds": "^9",
+    "@sap/xsenv": "^5.6.1",
+    "@sap/xssec": "^4.9.0",
     "express": "^4",
     "highlight.js": "^11.11.1",
     "marked": "^16.0.0",
@@ -17,22 +19,17 @@
   },
   "devDependencies": {
     "@cap-js/cds-types": "^0.11.0",
-    "@cap-js/sqlite": "^2"
+    "@cap-js/sqlite": "^2",
+    "@sap/cds-dk": "^9.1.1"
   },
   "scripts": {
     "start": "cds-serve",
     "watch-chatbot": "cds watch --open chatbot/webapp/index.html?sap-ui-xx-viewCache=false"
   },
-  "auth": {
-    "kind": "mocked",
-    "users": {
-      "thiago": {
-        "ID": "fd1f9c6e-3e39-4f2f-8519-081049c29101",
-        "roles": ["authenticated-user"]
-      },
-      "outro_usuario": {
-        "ID": "fd1f9c6e-3e39-4f2f-8519-081049c29102",
-        "roles": ["authenticated-user"]
+  "cds": {
+    "requires": {
+      "[production]": {
+        "auth": "xsuaa"
       }
     }
   }
