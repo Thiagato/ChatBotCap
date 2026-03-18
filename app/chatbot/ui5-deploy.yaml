@@ -1,0 +1,16 @@
+specVersion: "3.1"
+metadata:
+  name: chatbot
+type: application
+builder:
+  resources:
+    excludes:
+      - /test/**
+      - /localService/**
+  customTasks:
+    - name: ui5-task-zipper
+      afterTask: generateCachebusterInfo
+      configuration:
+        archiveName: chatbot-content
+        additionalFiles:
+          - xs-app.json
