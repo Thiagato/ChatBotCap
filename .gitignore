@@ -8,6 +8,7 @@ default-*.json
 gen/
 node_modules/
 target/
+dist/
 
 # Web IDE, App Studio
 .che/
@@ -33,3 +34,5 @@ mta_archives/
 # @cap-js/cds-typer
 @cds-models
 .env
+app/chatbot/dist/chatbot-content.zip
+resources/chatbot-content.zip

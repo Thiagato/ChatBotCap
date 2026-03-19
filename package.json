@@ -6,10 +6,10 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@cap-js/sqlite": "^2",
     "@sap-cloud-sdk/http-client": "^4.5.1",
     "@sap/cds": "^9",
     "@sap/cds-dk": "^9",
+    "@cap-js/sqlite": "^2",
     "express": "^4",
     "highlight.js": "^11.11.1",
     "marked": "^16.0.0",
@@ -23,20 +23,17 @@
   },
   "cds": {
     "requires": {
-      "auth": "mocked",
       "db": {
         "kind": "sqlite",
         "credentials": {
           "url": "db.sqlite"
-        },
-        "pool": {
-          "max": 1
         }
-      }
+      },
+      "auth": "mocked"
     }
   },
   "scripts": {
-    "start": "cds deploy && cds-serve",
+    "start": "cds deploy ./srv/csn.json --to sqlite:db.sqlite && cds serve ./srv/csn.json",
     "watch-chatbot": "cds watch --open chatbot/webapp/index.html?sap-ui-xx-viewCache=false"
   }
 }
