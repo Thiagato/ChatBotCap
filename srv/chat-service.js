@@ -101,7 +101,7 @@ module.exports = cds.service.impl(function (srv) {
                 : question
             }
           ],
-          max_tokens: 2048
+          max_tokens: 8192
         });
 
         const answer = result?.choices?.[0]?.message?.content ?? '❔';
